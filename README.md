@@ -113,9 +113,23 @@ test/
 
 ## 📸 Tampilan Aplikasi
 
-| Beranda | Rekomendasi | Detail | Favorit |
-|---|---|---|---|
-| _(screenshot)_ | _(screenshot)_ | _(screenshot)_ | _(screenshot)_ |
+<table>
+  <tr>
+    <td align="center"><img src="screenshots/splash.png" width="200"/><br/><b>Splash Screen</b></td>
+    <td align="center"><img src="screenshots/beranda.png" width="200"/><br/><b>Beranda</b></td>
+    <td align="center"><img src="screenshots/rekomendasi.png" width="200"/><br/><b>Rekomendasi</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/hasil_rekomendasi.png" width="200"/><br/><b>Hasil Rekomendasi</b></td>
+    <td align="center"><img src="screenshots/cari.png" width="200"/><br/><b>Pencarian</b></td>
+    <td align="center"><img src="screenshots/detail.png" width="200"/><br/><b>Detail Film</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="screenshots/tersedia_di.png" width="200"/><br/><b>Tersedia di & Sinopsis</b></td>
+    <td align="center"><img src="screenshots/favorit.png" width="200"/><br/><b>Favorit</b></td>
+    <td align="center"><img src="screenshots/error.png" width="200"/><br/><b>Kondisi Error</b></td>
+  </tr>
+</table>
 
 ---
 

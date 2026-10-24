@@ -42,6 +42,16 @@ class _DetailPageState extends State<DetailPage> {
 
   // ------------------------------------------------------------- Aksi
 
+  Future<void> _reload() async {
+    final future = TmdbService.detail(widget.movie.id);
+    setState(() {
+      _future = future;
+    });
+    try {
+      await future;
+    } catch (_) {}
+  }
+
   Future<void> _toggleFavorite(MovieDetail? detail) async {
     final base = detail?.movie ?? widget.movie;
     final movie = Movie(
@@ -287,10 +297,12 @@ class _DetailPageState extends State<DetailPage> {
           if (snapshot.hasError) {
             return Stack(
               children: [
-                StateView.error(
-                  message: '${snapshot.error}',
-                  onRetry: () => setState(() =>
-                      _future = TmdbService.detail(widget.movie.id)),
+                RefreshableState(
+                  onRefresh: _reload,
+                  child: StateView.error(
+                    message: '${snapshot.error}',
+                    onRetry: _reload,
+                  ),
                 ),
                 _topButtons(null),
               ],

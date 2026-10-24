@@ -32,7 +32,18 @@ enum SortOption {
 class TmdbService {
   TmdbService._();
 
-  static final http.Client _client = http.Client();
+  /// Client HTTP yang dipakai bersama. Bisa diganti dengan yang baru
+  /// jika koneksi lama rusak (misalnya setelah internet sempat terputus).
+  static http.Client _client = http.Client();
+
+  /// Menutup client lama dan membuat client baru, supaya permintaan
+  /// berikutnya tidak memakai koneksi yang sudah terputus.
+  static void _resetClient() {
+    try {
+      _client.close();
+    } catch (_) {}
+    _client = http.Client();
+  }
 
   static Map<String, String> get _headers => {
         'Authorization': 'Bearer ${ApiConfig.readAccessToken}',
@@ -45,6 +56,53 @@ class TmdbService {
     return '${now.year}-${two(now.month)}-${two(now.day)}';
   }
 
+  /// Mengirim permintaan GET dan mengembalikan respons mentah.
+  ///
+  /// Jika gagal karena gangguan jaringan, client direset lalu permintaan
+  /// dicoba sekali lagi setelah jeda singkat. Ini membantu ketika internet
+  /// baru saja tersambung kembali dan HP belum sepenuhnya siap.
+  static Future<http.Response> _send(Uri uri) async {
+    const maxAttempts = 2;
+    for (var attempt = 1;; attempt++) {
+      try {
+        return await _client
+            .get(uri, headers: _headers)
+            .timeout(ApiConfig.timeout);
+      } on TimeoutException {
+        _resetClient();
+        if (attempt >= maxAttempts) {
+          throw const ApiException(
+              'Server terlalu lama merespons. Coba lagi beberapa saat lagi.');
+        }
+      } on SocketException {
+        _resetClient();
+        if (attempt >= maxAttempts) {
+          throw const ApiException(
+              'Tidak ada koneksi internet. Periksa jaringanmu, lalu coba lagi.');
+        }
+      } on http.ClientException {
+        _resetClient();
+        if (attempt >= maxAttempts) {
+          throw const ApiException(
+              'Gagal terhubung ke server. Periksa koneksi internetmu.');
+        }
+      } on HandshakeException {
+        _resetClient();
+        if (attempt >= maxAttempts) {
+          throw const ApiException(
+              'Koneksi aman ke server gagal. Periksa jaringanmu, lalu coba lagi.');
+        }
+      } on HttpException {
+        _resetClient();
+        if (attempt >= maxAttempts) {
+          throw const ApiException(
+              'Koneksi ke server terputus. Coba lagi.');
+        }
+      }
+      await Future.delayed(const Duration(milliseconds: 1200));
+    }
+  }
+
   /// Mengirim permintaan GET, memeriksa status respons,
   /// lalu mengubah body JSON menjadi Map.
   static Future<Map<String, dynamic>> _get(
@@ -55,21 +113,7 @@ class TmdbService {
       queryParameters: {'language': ApiConfig.language, ...query},
     );
 
-    late final http.Response response;
-    try {
-      response = await _client
-          .get(uri, headers: _headers)
-          .timeout(ApiConfig.timeout);
-    } on TimeoutException {
-      throw const ApiException(
-          'Server terlalu lama merespons. Coba lagi beberapa saat lagi.');
-    } on SocketException {
-      throw const ApiException(
-          'Tidak ada koneksi internet. Periksa jaringanmu, lalu coba lagi.');
-    } on http.ClientException {
-      throw const ApiException(
-          'Gagal terhubung ke server. Periksa koneksi internetmu.');
-    }
+    final response = await _send(uri);
 
     switch (response.statusCode) {
       case 200:

@@ -69,9 +69,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// Memuat ulang data. Dipakai oleh tarik-ke-bawah dan tombol Coba Lagi.
   Future<void> _refresh() async {
     final future = _load();
-    setState(() => _future = future);
+    setState(() {
+      _future = future;
+    });
     try {
       await future;
     } catch (_) {
@@ -79,7 +82,11 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _retry() => setState(() => _future = _load());
+  void _retry() {
+    setState(() {
+      _future = _load();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,9 +105,12 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const _HomeHeader(),
                 Expanded(
-                  child: StateView.error(
-                    message: '${snapshot.error}',
-                    onRetry: _retry,
+                  child: RefreshableState(
+                    onRefresh: _refresh,
+                    child: StateView.error(
+                      message: '${snapshot.error}',
+                      onRetry: _retry,
+                    ),
                   ),
                 ),
               ],

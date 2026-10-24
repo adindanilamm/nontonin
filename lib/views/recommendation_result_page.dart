@@ -61,6 +61,16 @@ class _RecommendationResultPageState extends State<RecommendationResultPage> {
     return result;
   }
 
+  Future<void> _reload() async {
+    final future = _load(1);
+    setState(() {
+      _firstPage = future;
+    });
+    try {
+      await future;
+    } catch (_) {}
+  }
+
   Future<void> _loadMore() async {
     setState(() => _loadingMore = true);
     try {
@@ -101,9 +111,12 @@ class _RecommendationResultPageState extends State<RecommendationResultPage> {
             return _loadingGrid();
           }
           if (snapshot.hasError) {
-            return StateView.error(
-              message: '${snapshot.error}',
-              onRetry: () => setState(() => _firstPage = _load(1)),
+            return RefreshableState(
+              onRefresh: _reload,
+              child: StateView.error(
+                message: '${snapshot.error}',
+                onRetry: _reload,
+              ),
             );
           }
           if (_movies.isEmpty) {

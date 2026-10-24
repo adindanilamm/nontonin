@@ -161,7 +161,11 @@ class _FavoritePageState extends State<FavoritePage> {
               message: '${snapshot.error}'.replaceFirst('Exception: ', ''),
               buttonLabel: 'Coba Lagi',
               buttonIcon: Icons.refresh_rounded,
-              onPressed: () => setState(() => _future = _service.load()),
+              onPressed: () {
+                setState(() {
+                  _future = _service.load();
+                });
+              },
             );
           }
           return ListenableBuilder(

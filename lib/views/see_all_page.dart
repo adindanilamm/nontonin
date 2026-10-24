@@ -50,6 +50,16 @@ class _SeeAllPageState extends State<SeeAllPage> {
     return result;
   }
 
+  Future<void> _reload() async {
+    final future = _loadFirst();
+    setState(() {
+      _firstPage = future;
+    });
+    try {
+      await future;
+    } catch (_) {}
+  }
+
   Future<void> _loadMore() async {
     setState(() => _loadingMore = true);
     try {
@@ -89,9 +99,12 @@ class _SeeAllPageState extends State<SeeAllPage> {
             );
           }
           if (snapshot.hasError) {
-            return StateView.error(
-              message: '${snapshot.error}',
-              onRetry: () => setState(() => _firstPage = _loadFirst()),
+            return RefreshableState(
+              onRefresh: _reload,
+              child: StateView.error(
+                message: '${snapshot.error}',
+                onRetry: _reload,
+              ),
             );
           }
           if (_movies.isEmpty) {

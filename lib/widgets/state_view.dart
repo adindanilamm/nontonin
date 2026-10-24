@@ -3,6 +3,34 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import 'app_buttons.dart';
 
+/// Membungkus tampilan error/kosong agar bisa ditarik ke bawah
+/// untuk memuat ulang (pull to refresh), seperti di browser HP.
+class RefreshableState extends StatelessWidget {
+  final Future<void> Function() onRefresh;
+  final Widget child;
+
+  const RefreshableState({
+    super.key,
+    required this.onRefresh,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      color: AppColors.primary,
+      backgroundColor: AppColors.surface,
+      onRefresh: onRefresh,
+      child: LayoutBuilder(
+        builder: (context, box) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(height: box.maxHeight, child: child),
+        ),
+      ),
+    );
+  }
+}
+
 /// Tampilan kondisi khusus: error, data kosong, atau hasil tidak ditemukan.
 class StateView extends StatelessWidget {
   final IconData icon;
@@ -38,7 +66,13 @@ class StateView extends StatelessWidget {
         message: message,
         buttonLabel: 'Coba Lagi',
         buttonIcon: Icons.refresh_rounded,
-        onPressed: onRetry,
+        onPressed: () {
+          // Hapus gambar yang gagal dimuat dari cache supaya ikut dimuat ulang.
+          PaintingBinding.instance.imageCache
+            ..clear()
+            ..clearLiveImages();
+          onRetry();
+        },
       );
 
   @override

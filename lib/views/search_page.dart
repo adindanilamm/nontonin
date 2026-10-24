@@ -56,6 +56,16 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  Future<void> _reload() async {
+    final future = TmdbService.search(_query);
+    setState(() {
+      _future = future;
+    });
+    try {
+      await future;
+    } catch (_) {}
+  }
+
   void _usePopular(String title) {
     _controller.text = title;
     _controller.selection =
@@ -139,9 +149,12 @@ class _SearchPageState extends State<SearchPage> {
           );
         }
         if (snapshot.hasError) {
-          return StateView.error(
-            message: '${snapshot.error}',
-            onRetry: () => setState(() => _future = TmdbService.search(_query)),
+          return RefreshableState(
+            onRefresh: _reload,
+            child: StateView.error(
+              message: '${snapshot.error}',
+              onRetry: _reload,
+            ),
           );
         }
         final movies = snapshot.data!.movies;
