@@ -1,0 +1,39 @@
+name: nontonin
+description: "Nontonin - aplikasi rekomendasi film berbasis TMDB API (UTS Pemrograman Mobile)."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Mengirim permintaan HTTP ke TMDB REST API
+  http: ^1.1.0
+
+  # Huruf Poppins sesuai desain
+  google_fonts: ^6.1.0
+
+  # Format tanggal Bahasa Indonesia
+  intl: ^0.20.2
+
+  # Lokasi folder penyimpanan untuk data favorit
+  path_provider: ^2.1.5
+
+  cupertino_icons: ^1.0.8
+
+# path_provider_android versi baru membutuhkan NDK/CMake (paket jni).
+# Versi 2.2.17 dipakai agar build tetap ringan tanpa NDK.
+dependency_overrides:
+  path_provider_android: 2.2.17
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
